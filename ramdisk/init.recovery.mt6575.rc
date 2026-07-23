@@ -1,0 +1,35 @@
+on fs
+    # MT6575 uses f_adb directly, not FunctionFS — override the generic USB setup
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 1004
+    write /sys/class/android_usb/android0/idProduct 631F
+    write /sys/class/android_usb/android0/functions adb
+    write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
+    write /sys/class/android_usb/android0/iProduct ${ro.product.model}
+
+# ro.serialno viene vacío en recovery (el bootloader no pasa androidboot.serialno
+# por cmdline y no hay servicio propio de LG que lo popule); escribir el valor
+# directo en "on fs" falla la expansión de la propiedad. Se difiere a un trigger
+# que solo dispara si la propiedad llega a tener un valor real; si nunca lo tiene
+# (caso esperado en este device), el write simplemente no ocurre, sin error.
+on property:ro.serialno=*
+    write /sys/class/android_usb/android0/iSerial ${ro.serialno}
+
+on boot
+    setprop persist.service.adb.enable 1
+    setprop service.adb.root 1
+    setprop sys.usb.config adb
+
+on property:sys.usb.config=adb
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/functions adb
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state adb
+
+on property:sys.usb.config=mtp,adb
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/functions mtp,adb
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state mtp,adb

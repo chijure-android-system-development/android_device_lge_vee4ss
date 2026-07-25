@@ -20,6 +20,25 @@ TARGET_OTA_ASSERT_DEVICE := vee4ss,E440g,LG-E440g
 BOARD_USES_LEGACY_CAMERA := true
 ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
 
+# WiFi — driver como módulo kernel (wlan.ko), interfaz nl80211
+# NOTE: this must live here, NOT in vendor/lge/vee4ss/BoardConfigVendor.mk —
+# this build system has no automatic vendor BoardConfig include mechanism,
+# so that file is never read. (vee5ss's copy is equally dead; its real
+# values live directly in device/lge/vee5ss/BoardConfig.mk, same as here.)
+BOARD_WLAN_DEVICE           := MT6620
+WPA_SUPPLICANT_VERSION      := VER_0_8_X
+BOARD_WPA_SUPPLICANT_DRIVER := NL80211
+BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_mt66xx
+BOARD_HOSTAPD_DRIVER        := NL80211
+BOARD_HOSTAPD_PRIVATE_LIB   := lib_driver_cmd_mt66xx
+WIFI_DRIVER_MODULE_PATH     := /system/lib/modules/wlan.ko
+WIFI_DRIVER_MODULE_NAME     := wlan
+
+# Bluetooth — MT6620 combo via UART
+BOARD_HAVE_BLUETOOTH        := true
+BOARD_HAVE_BLUETOOTH_MTK    := true
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/lge/vee4ss/bluetooth
+
 # ---- Kernel prebuilt ----
 TARGET_PREBUILT_KERNEL := device/lge/vee4ss/kernel
 

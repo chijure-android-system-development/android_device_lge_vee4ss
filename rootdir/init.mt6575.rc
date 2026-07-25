@@ -254,6 +254,13 @@ on boot
 service bootlogoupdater /system/bin/boot_logo_updater
     oneshot
 
+# Persists the full logcat stream to /data so it survives even if USB/adb
+# drops mid-boot or the device reboots — pull it via TWRP afterward.
+service persistlog /system/bin/logcat -f /data/boot_persist.log -v threadtime
+    class main
+    user root
+    group root log
+
 service ccci_rpcd /system/bin/ccci_rpcd
     class core
     user root

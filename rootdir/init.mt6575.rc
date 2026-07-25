@@ -248,6 +248,12 @@ on boot
     # Clase de inicio para servicios del sistema
     class_start default
 
+# Hands off the LK/preloader boot logo to the kernel fb driver's own
+# logo — without this the display stays frozen on the bootloader splash
+# even once Android is fully up and drawing (stock service, oneshot).
+service bootlogoupdater /system/bin/boot_logo_updater
+    oneshot
+
 service ccci_rpcd /system/bin/ccci_rpcd
     class core
     user root

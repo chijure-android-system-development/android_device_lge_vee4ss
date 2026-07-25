@@ -1,19 +1,140 @@
-PRODUCT_DEVICE := vee4ss
-PRODUCT_NAME := omni_vee4ss
-PRODUCT_BRAND := lge
-PRODUCT_MODEL := LG-E440g
+# Full Android base platform (includes core.mk + fonts + librs_jni + audio HALs + keyboards)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/generic_no_telephony.mk)
+
+# Runtime libraries needed for Android boot (not in generic_no_telephony.mk)
+PRODUCT_PACKAGES += \
+    libkeystore_client \
+    sensorservice
+
+DEVICE_PACKAGE_OVERLAYS := device/lge/vee4ss/overlay
+
+PRODUCT_DEVICE       := vee4ss
+PRODUCT_NAME         := omni_vee4ss
+PRODUCT_BRAND        := lge
+PRODUCT_MODEL        := LG-E440g
 PRODUCT_MANUFACTURER := LGE
 
+# ---- Dalvik heap para dispositivo mdpi ~486 MB RAM (misma clase que vee5ss) ----
+$(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
+
+# ---- AAPT ----
+PRODUCT_AAPT_CONFIG      := normal mdpi
+PRODUCT_AAPT_PREF_CONFIG := mdpi
+
+# ---- Init y ramdisk ----
+PRODUCT_COPY_FILES += \
+    device/lge/vee4ss/rootdir/init.rc:root/init.rc \
+    device/lge/vee4ss/rootdir/fstab.mt6575:root/fstab.mt6575 \
+    device/lge/vee4ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \
+    device/lge/vee4ss/rootdir/init.mt6575.usb.rc:root/init.mt6575.usb.rc \
+    device/lge/vee4ss/rootdir/ueventd.mt6575.rc:root/ueventd.mt6575.rc \
+    system/core/rootdir/init.usb.rc:root/init.usb.rc \
+    system/core/rootdir/init.trace.rc:root/init.trace.rc \
+    device/lge/vee4ss/init.d/10mtk-nodes:system/etc/init.d/10mtk-nodes \
+    device/lge/vee4ss/init.d/20sensors:system/etc/init.d/20sensors \
+    device/lge/vee4ss/vold.fstab:system/etc/vold.fstab \
+    device/lge/vee4ss/audio_policy.conf:system/etc/audio_policy.conf
+
+# ---- Recovery (TWRP) ----
 PRODUCT_COPY_FILES += \
     device/lge/vee4ss/ramdisk/init.recovery.mt6575.rc:root/init.recovery.mt6575.rc \
     device/lge/vee4ss/ramdisk/sbin/postrecoveryboot.sh:root/sbin/postrecoveryboot.sh
 
-PRODUCT_PACKAGES += \
-    adbd
+# ---- Keymaps stock MTK/LG ----
+PRODUCT_COPY_FILES += \
+    device/lge/vee4ss/keylayout/mtk-kpd.kl:system/usr/keylayout/mtk-kpd.kl \
+    device/lge/vee4ss/keylayout/mtk-kpd.kl:system/usr/keylayout/Vendor_2454_Product_6575.kl \
+    device/lge/vee4ss/keylayout/ACCDET.kl:system/usr/keylayout/ACCDET.kl \
+    device/lge/vee4ss/keychars/mtk-kpd.kcm:system/usr/keychars/mtk-kpd.kcm
 
-# Recovery ADB defaults. ro.secure=0 y ro.debuggable=1 ya vienen del
-# build omni_vee4ss-eng; esto son los defaults de USB/ADB específicos del device.
+# ---- Permisos de hardware ----
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
+    frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
+    frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
+    frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
+    frameworks/native/data/etc/android.hardware.sensor.compass.xml:system/etc/permissions/android.hardware.sensor.compass.xml \
+    frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml \
+    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
+    frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
+    frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
+    frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
+    frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
+
+# ---- Media profiles ----
+PRODUCT_COPY_FILES += \
+    device/lge/vee4ss/media_profiles.xml:system/etc/media_profiles.xml \
+    device/lge/vee4ss/media_codecs.xml:system/etc/media_codecs.xml
+
+# ---- Propiedades del sistema ----
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.sf.lcd_density=160 \
+    ro.opengles.version=131072 \
+    ro.bluetooth.PANenable=1 \
+    ro.btstack=blueangel \
+    wifi.interface=wlan0 \
+    wifi.tethering.interface=ap0 \
+    wifi.direct.interface=p2p0 \
+    wifi.supplicant_scan_interval=20 \
+    ro.mediatek.wlan.wsc=1 \
+    ro.mediatek.wlan.p2p=1 \
+    mediatek.wlan.ctia=0 \
+    mediatek.wlan.chip=MT6620 \
+    mediatek.wlan.module.postfix=_mt6620 \
+    wlan.chip.vendor=mtk \
+    wlan.chip.version=mt6620 \
+    wifi.lge.patch=true \
+    wlan.lge.concurrency=SCC \
+    wlan.lge.supportsimaka=YES \
+    gps.solution.combo.chip=1 \
+    rild.libpath=/system/lib/mtk-ril.so \
+    telephony.lteOnGsmDevice=0 \
+    ro.com.android.dataroaming=false \
+    ro.config.low_ram=true \
+    config.disable_atlas=true \
+    persist.service.adb.enable=1 \
+    persist.sys.usb.config=mtp,adb \
+    ro.zram.default=25
+
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.adb.secure=0 \
-    persist.service.adb.enable=1 \
     service.adb.root=1
+
+PRODUCT_TAGS += dalvik.gc.type-precise
+
+# ---- Paquetes ----
+PRODUCT_PACKAGES += \
+    libacdk \
+    libagpssupl \
+    libaudiocompensationfilter \
+    libaudiocustparam \
+    libaudiosetting \
+    libbessound_mtk \
+    libbluetooth_mtk \
+    libbluetoothdrv \
+    libbluetoothem_mtk \
+    libbtcust \
+    libbtcusttable \
+    libbtpcm \
+    libcamalgo \
+    libcameracustom \
+    libcameraprofile \
+    libcustom_nvram \
+    libextjsr82 \
+    libmtk_devinfo \
+    libmtk_drvb \
+    libmtkbtextadpa2dp \
+    libnvram \
+    libnvram_daemon_callback \
+    camera.mt6575 \
+    Gallery2 \
+    Torch \
+    lights.mt6575 \
+    power.mt6575 \
+    rild \
+    libril \
+    mtk_agpsd \
+    nvram_agent_binder \
+    nvram_audio_init \
+    adbd

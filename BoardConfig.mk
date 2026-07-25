@@ -13,6 +13,13 @@ TARGET_ARCH_LOWMEM := true
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
 
+# ---- Full ROM build (CM10) ----
+TARGET_RELEASETOOLS_EXTENSIONS := device/lge/vee4ss
+TARGET_PROVIDES_INIT_RC := true
+TARGET_OTA_ASSERT_DEVICE := vee4ss,E440g,LG-E440g
+BOARD_USES_LEGACY_CAMERA := true
+ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
+
 # ---- Kernel prebuilt ----
 TARGET_PREBUILT_KERNEL := device/lge/vee4ss/kernel
 

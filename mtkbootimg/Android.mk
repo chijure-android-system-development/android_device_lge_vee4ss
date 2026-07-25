@@ -6,7 +6,8 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := mkbootimg.c
 LOCAL_STATIC_LIBRARIES := libmincrypt
 
-LOCAL_MODULE := mtkbootimg
+LOCAL_MODULE      := mtkbootimg
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 include $(BUILD_HOST_EXECUTABLE)

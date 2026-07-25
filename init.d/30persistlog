@@ -1,7 +1,15 @@
 #!/system/bin/sh
 # Persist the full logcat stream to /data so it survives even if USB/adb
 # drops mid-boot or the device reboots — pull it via TWRP afterward.
-logcat -v threadtime -f /data/boot_persist.log &
+#
+# CRITICAL: init.rc's `exec /system/bin/sysinit` (which runs these init.d
+# scripts) BLOCKS until the whole process tree it spawns has closed its
+# stdout/stderr — backgrounding with `&` alone does NOT detach from those
+# inherited fds. Every backgrounded command here must redirect all three
+# std fds away (</dev/null >file 2>&1) or it will silently delay
+# class_start core/main (SurfaceFlinger, Zygote, system_server — everything)
+# by however long the background job takes to exit.
+logcat -v threadtime -f /data/boot_persist.log </dev/null >/dev/null 2>&1 &
 
 # Grab a SurfaceFlinger/display snapshot once the system has had time to settle.
 (
@@ -10,4 +18,4 @@ logcat -v threadtime -f /data/boot_persist.log &
     cat /sys/class/graphics/fb0/bits_per_pixel > /data/fb0_state.txt 2>&1
     echo "---" >> /data/fb0_state.txt
     cat /sys/class/leds/lcd-backlight/brightness >> /data/fb0_state.txt 2>&1
-) &
+) </dev/null >/dev/null 2>&1 &

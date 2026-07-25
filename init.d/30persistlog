@@ -1,0 +1,13 @@
+#!/system/bin/sh
+# Persist the full logcat stream to /data so it survives even if USB/adb
+# drops mid-boot or the device reboots — pull it via TWRP afterward.
+logcat -v threadtime -f /data/boot_persist.log &
+
+# Grab a SurfaceFlinger/display snapshot once the system has had time to settle.
+(
+    sleep 60
+    dumpsys SurfaceFlinger > /data/sf_dump.txt 2>&1
+    cat /sys/class/graphics/fb0/bits_per_pixel > /data/fb0_state.txt 2>&1
+    echo "---" >> /data/fb0_state.txt
+    cat /sys/class/leds/lcd-backlight/brightness >> /data/fb0_state.txt 2>&1
+) &

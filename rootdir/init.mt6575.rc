@@ -59,6 +59,11 @@ on post-fs-data
     setprop vold.post_fs_data_done 1
 
 on boot
+    # debug.* properties are stripped from build.prop by the build system
+    # (they're meant to be runtime-only) — PRODUCT_PROPERTY_OVERRIDES can't
+    # set them, so force it here instead, before surfaceflinger starts.
+    setprop debug.sf.hw 0
+
     write /dev/kmsg "CMBOOT: boot - loading modules\n"
     # Kernel modules — cargar antes de que arranquen los servicios
     insmod /system/lib/modules/pvrsrvkm.ko

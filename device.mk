@@ -72,7 +72,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=160 \
     ro.opengles.version=131072 \
-    debug.sf.hw=0 \
     ro.bluetooth.PANenable=1 \
     ro.btstack=blueangel \
     wifi.interface=wlan0 \

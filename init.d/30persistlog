@@ -11,6 +11,18 @@
 # by however long the background job takes to exit.
 logcat -v threadtime -f /data/boot_persist.log </dev/null >/dev/null 2>&1 &
 
+# Repeatedly snapshot dmesg so we catch the kernel-level DSI busy/reset
+# warnings (if any) right around when the display hang happens, not just
+# once at the end — dmesg only shows what's still in the ring buffer.
+(
+    i=0
+    while [ $i -lt 6 ]; do
+        sleep 15
+        dmesg > /data/dmesg_snap_$i.txt 2>&1
+        i=$((i+1))
+    done
+) </dev/null >/dev/null 2>&1 &
+
 # Grab a SurfaceFlinger/display snapshot once the system has had time to settle.
 (
     sleep 60

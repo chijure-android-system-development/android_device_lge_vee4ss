@@ -1,6 +1,6 @@
 $(call inherit-product, device/lge/vee4ss/device.mk)
 $(call inherit-product-if-exists, vendor/lge/vee4ss/vee4ss-vendor-blobs.mk)
-$(call inherit-product, vendor/cm/config/common_mini_phone.mk)
+$(call inherit-product, vendor/cm/config/common_full_phone.mk)
 
 PRODUCT_NAME     := cm_vee4ss
 PRODUCT_DEVICE   := vee4ss

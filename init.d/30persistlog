@@ -31,3 +31,19 @@ logcat -v threadtime -f /data/boot_persist.log </dev/null >/dev/null 2>&1 &
     echo "---" >> /data/fb0_state.txt
     cat /sys/class/leds/lcd-backlight/brightness >> /data/fb0_state.txt 2>&1
 ) </dev/null >/dev/null 2>&1 &
+
+# CPU-contention check: snapshot process list + load average at the same
+# 15s cadence as the dmesg snapshots, to see if the CPU is pegged/saturated
+# (too many processes starting at once) right when the display hang begins.
+(
+    i=0
+    while [ $i -lt 8 ]; do
+        sleep 10
+        {
+            cat /proc/loadavg
+            echo "---"
+            ps -t
+        } > /data/ps_snap_$i.txt 2>&1
+        i=$((i+1))
+    done
+) </dev/null >/dev/null 2>&1 &

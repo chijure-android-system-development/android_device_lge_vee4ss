@@ -32,7 +32,6 @@ PRODUCT_COPY_FILES += \
     system/core/rootdir/init.trace.rc:root/init.trace.rc \
     device/lge/vee4ss/init.d/10mtk-nodes:system/etc/init.d/10mtk-nodes \
     device/lge/vee4ss/init.d/20sensors:system/etc/init.d/20sensors \
-    device/lge/vee4ss/init.d/30persistlog:system/etc/init.d/30persistlog \
     device/lge/vee4ss/vold.fstab:system/etc/vold.fstab \
     device/lge/vee4ss/audio_policy.conf:system/etc/audio_policy.conf
 

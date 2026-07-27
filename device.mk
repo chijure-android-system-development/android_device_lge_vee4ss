@@ -95,7 +95,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.config.low_ram=true \
     config.disable_atlas=true \
     persist.service.adb.enable=1 \
-    persist.sys.usb.config=mtp,adb \
+    persist.sys.usb.config=adb \
     ro.zram.default=25
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \

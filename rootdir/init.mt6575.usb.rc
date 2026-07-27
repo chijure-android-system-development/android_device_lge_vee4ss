@@ -5,7 +5,7 @@ on init
     write /sys/class/android_usb/android0/iManufacturer   ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct        ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial         ${ro.serialno}
-    setprop sys.usb.config mtp,adb
+    setprop sys.usb.config adb
 
 on property:sys.usb.config=none
     write /sys/class/android_usb/android0/enable 0

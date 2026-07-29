@@ -7,7 +7,7 @@ while true; do
         c=$(cat "$p/comm" 2>/dev/null)
         if [ "$c" = "surfaceflinger" ]; then
             pid=${p#/proc/}
-            exec /system/bin/strace -f -tt -T \
+            exec /system/xbin/strace -f -tt -T \
                 -e trace=ioctl,poll,ppoll,epoll_wait,select,futex \
                 -p "$pid" -o /data/sf_strace.log
         fi

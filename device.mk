@@ -23,7 +23,6 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 # ---- Init y ramdisk ----
 PRODUCT_COPY_FILES += \
-    device/lge/vee4ss/bin/sfprocstate.sh:system/bin/sfprocstate.sh \
     device/lge/vee4ss/rootdir/init.rc:root/init.rc \
     device/lge/vee4ss/rootdir/fstab.mt6575:root/fstab.mt6575 \
     device/lge/vee4ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \

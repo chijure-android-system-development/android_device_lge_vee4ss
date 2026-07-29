@@ -68,58 +68,19 @@ BOARD_HAS_NO_MISC_PARTITION := true
 BOARD_SUPPRESS_SECURE_ERASE := true
 BOARD_SUPPRESS_EMMC_WIPE := true
 BOARD_USES_MMCUTILS := true
-BOARD_RECOVERY_SWIPE := true
 TARGET_RECOVERY_FSTAB := device/lge/vee4ss/ramdisk/recovery/twrp.fstab
-
-# NO poner TW_EXCLUDE_DEFAULT_USB_INIT aquí — se probó (2026-07-23) y aunque en
-# teoría bootable/recovery/etc/init.recovery.usb.rc (genérico) es redundante con
-# nuestro init.recovery.mt6575.rc, sacarlo del build rompió ADB por completo
-# (USB quedaba en "offline", idVendor/idProduct nunca se configuraban), reproducible
-# en 2 reboots seguidos. Con el archivo genérico presente, ADB conecta bien de
-# forma confiable (confirmado en varios reboots) aunque quede un error cosmético
-# en el log de init por `${ro.serialno}` sin resolver — no tocar esto de nuevo
-# sin poder probar varios ciclos de reboot antes de darlo por bueno.
-
-# El campo Serial de /proc/cpuinfo da puros ceros en este MT6575, así que el
-# device_id por defecto de TWRP (usado para el nombre de la carpeta de backup)
-# sale como "0000000000000000". Usar el modelo del producto en su lugar
-# (-> "LG-E440g"). En teoría debería agregar también el campo Hardware de
-# cpuinfo (-> "LG-E440g_MT6575"), pero DataManager::get_device_id() en
-# bootable/recovery/data.cpp abre "proc_cpuinfo.txt" (ruta relativa, no
-# "/proc/cpuinfo") para ese campo — el fopen falla en silencio y el sufijo
-# nunca se agrega. Confirmado en hardware real (2026-07-23): el nombre final
-# es solo "LG-E440g", igual de limpio, no vale la pena tocar el código
-# compartido de TWRP por esto.
-TW_USE_MODEL_HARDWARE_ID_FOR_DEVICE_ID := true
-
-# TWRP UI: pantalla 320x480 HVGA (ili9486_hvga_dsi_cmd, 32bpp framebuffer)
-TW_THEME := portrait_mdpi
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"
 
 # Almacenamiento interno via datamedia (/data/media)
 RECOVERY_SDCARD_ON_DATA := true
-TW_INTERNAL_STORAGE_PATH := "/data/media"
-TW_INTERNAL_STORAGE_MOUNT_POINT := "data"
-TW_EXTERNAL_STORAGE_PATH := "/external_sd"
-TW_EXTERNAL_STORAGE_MOUNT_POINT := "external_sd"
 
-TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/virtual/android_usb/android0/f_mass_storage/lun/file
-TW_HAS_MTP := true
-TW_MTP_DEVICE := /dev/mtp_usb
+# ---- ADB root (útil durante el desarrollo del port) ----
+ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
 
-TW_NO_EXFAT := true
-TW_DEVICE_VERSION := 0.1
-TW_INCLUDE_CRYPTO := false
-TW_EXCLUDE_SUPERSU := true
-TW_NO_REBOOT_BOOTLOADER := true
+# ---- Charger mode (MTK detecta vía androidboot.mode=charger) ----
+BOARD_GLOBAL_CFLAGS += -DCHARGERMODE_CMDLINE_NAME='"androidboot.mode"' \
+                       -DCHARGERMODE_CMDLINE_VALUE='"charger"'
 
-TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
-TW_MAX_BRIGHTNESS := 255
-TW_DEFAULT_BRIGHTNESS := 128
-TW_NO_CPU_TEMP := true
-
+# ---- Filesystem ----
 BOARD_HAS_LARGE_FILESYSTEM := true
-BOARD_VOLD_MAX_PARTITIONS := 30
-
-# Charger mode: MTK power-off charging detectado via androidboot.mode=charger
-BOARD_GLOBAL_CFLAGS += -DCHARGERMODE_CMDLINE_NAME='"androidboot.mode"' -DCHARGERMODE_CMDLINE_VALUE='"charger"'
+BOARD_VOLD_MAX_PARTITIONS   := 30

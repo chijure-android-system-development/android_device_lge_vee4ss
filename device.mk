@@ -6,10 +6,16 @@ PRODUCT_PACKAGES += \
     libkeystore_client \
     sensorservice
 
+# Diagnostic: strace SurfaceFlinger during the display-pipeline boot stall
+# (see device/lge/vee4ss/bin/sfstrace.sh + the sfstrace service in
+# rootdir/init.mt6575.rc). Remove once the stall is root-caused.
+PRODUCT_PACKAGES += \
+    strace
+
 DEVICE_PACKAGE_OVERLAYS := device/lge/vee4ss/overlay
 
 PRODUCT_DEVICE       := vee4ss
-PRODUCT_NAME         := omni_vee4ss
+PRODUCT_NAME         := cm_vee4ss
 PRODUCT_BRAND        := lge
 PRODUCT_MODEL        := LG-E440g
 PRODUCT_MANUFACTURER := LGE
@@ -23,6 +29,7 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 # ---- Init y ramdisk ----
 PRODUCT_COPY_FILES += \
+    device/lge/vee4ss/bin/sfstrace.sh:system/bin/sfstrace.sh \
     device/lge/vee4ss/rootdir/init.rc:root/init.rc \
     device/lge/vee4ss/rootdir/fstab.mt6575:root/fstab.mt6575 \
     device/lge/vee4ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \
@@ -34,11 +41,6 @@ PRODUCT_COPY_FILES += \
     device/lge/vee4ss/init.d/20sensors:system/etc/init.d/20sensors \
     device/lge/vee4ss/vold.fstab:system/etc/vold.fstab \
     device/lge/vee4ss/audio_policy.conf:system/etc/audio_policy.conf
-
-# ---- Recovery (TWRP) ----
-PRODUCT_COPY_FILES += \
-    device/lge/vee4ss/ramdisk/init.recovery.mt6575.rc:root/init.recovery.mt6575.rc \
-    device/lge/vee4ss/ramdisk/sbin/postrecoveryboot.sh:root/sbin/postrecoveryboot.sh
 
 # ---- Keymaps stock MTK/LG ----
 PRODUCT_COPY_FILES += \
@@ -136,5 +138,4 @@ PRODUCT_PACKAGES += \
     libril \
     mtk_agpsd \
     nvram_agent_binder \
-    nvram_audio_init \
-    adbd
+    nvram_audio_init

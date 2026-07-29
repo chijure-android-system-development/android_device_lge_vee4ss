@@ -59,11 +59,6 @@ on post-fs-data
     setprop vold.post_fs_data_done 1
 
 on boot
-    # debug.* properties are stripped from build.prop by the build system
-    # (they're meant to be runtime-only) — PRODUCT_PROPERTY_OVERRIDES can't
-    # set them, so force it here instead, before surfaceflinger starts.
-    setprop debug.sf.hw 0
-
     write /dev/kmsg "CMBOOT: boot - loading modules\n"
     # Kernel modules — cargar antes de que arranquen los servicios
     insmod /system/lib/modules/pvrsrvkm.ko
@@ -250,6 +245,8 @@ on boot
     # GPU init — before class_start so SurfaceFlinger gets a ready GPU
     exec /system/vendor/bin/pvrsrvctl --start
 
+    chmod 0755 /system/bin/sfstrace.sh
+
     # Clase de inicio para servicios del sistema
     class_start default
 
@@ -268,6 +265,18 @@ service persistlog /system/bin/logcat -v threadtime -f /data/boot_persist.log
     class main
     user root
     group root log
+
+# Diagnostic (session 2026-07-28): attaches strace to surfaceflinger as soon
+# as it appears, to catch the exact syscall it's blocked on when the
+# closeGlobalTransaction/BOOT TIMEOUT stall hits (~40s after "System now
+# ready"). Poll-and-attach instead of wrapping the surfaceflinger service
+# line directly, so this stays device-tree-scoped and doesn't touch the
+# shared system/core/rootdir/init.rc. Log lands in /data/sf_strace.log —
+# pull it via TWRP the same way as boot_persist.log. Remove once root-caused.
+service sfstrace /system/bin/sh /system/bin/sfstrace.sh
+    class main
+    user root
+    group root graphics
 
 service ccci_rpcd /system/bin/ccci_rpcd
     class core

@@ -245,7 +245,7 @@ on boot
     # GPU init — before class_start so SurfaceFlinger gets a ready GPU
     exec /system/vendor/bin/pvrsrvctl --start
 
-    chmod 0755 /system/bin/sfstrace.sh
+    chmod 0755 /system/bin/sfprocstate.sh
 
     # Clase de inicio para servicios del sistema
     class_start default
@@ -266,14 +266,15 @@ service persistlog /system/bin/logcat -v threadtime -f /data/boot_persist.log
     user root
     group root log
 
-# Diagnostic (session 2026-07-28): attaches strace to surfaceflinger as soon
-# as it appears, to catch the exact syscall it's blocked on when the
-# closeGlobalTransaction/BOOT TIMEOUT stall hits (~40s after "System now
-# ready"). Poll-and-attach instead of wrapping the surfaceflinger service
-# line directly, so this stays device-tree-scoped and doesn't touch the
-# shared system/core/rootdir/init.rc. Log lands in /data/sf_strace.log —
-# pull it via TWRP the same way as boot_persist.log. Remove once root-caused.
-service sfstrace /system/bin/sh /system/bin/sfstrace.sh
+# Diagnostic (session 2026-07-29): dumps surfaceflinger's own /proc state
+# (per-thread stat/wchan/syscall) every 2s, to catch what it's blocked on
+# when the closeGlobalTransaction/BOOT TIMEOUT stall hits (~40s after
+# "System now ready"). Ptrace-free — the bundled external/strace binary
+# segfaults unconditionally on this kernel/ABI (verified directly, not
+# specific to surfaceflinger), so this replaces that earlier attempt.
+# Log lands in /data/sf_procstate.log — pull it via TWRP the same way as
+# boot_persist.log. Remove once root-caused.
+service sfprocstate /system/bin/sh /system/bin/sfprocstate.sh
     class main
     user root
     group root graphics

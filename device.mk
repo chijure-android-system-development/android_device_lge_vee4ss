@@ -6,12 +6,6 @@ PRODUCT_PACKAGES += \
     libkeystore_client \
     sensorservice
 
-# Diagnostic: strace SurfaceFlinger during the display-pipeline boot stall
-# (see device/lge/vee4ss/bin/sfstrace.sh + the sfstrace service in
-# rootdir/init.mt6575.rc). Remove once the stall is root-caused.
-PRODUCT_PACKAGES += \
-    strace
-
 DEVICE_PACKAGE_OVERLAYS := device/lge/vee4ss/overlay
 
 PRODUCT_DEVICE       := vee4ss
@@ -29,7 +23,7 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 # ---- Init y ramdisk ----
 PRODUCT_COPY_FILES += \
-    device/lge/vee4ss/bin/sfstrace.sh:system/bin/sfstrace.sh \
+    device/lge/vee4ss/bin/sfprocstate.sh:system/bin/sfprocstate.sh \
     device/lge/vee4ss/rootdir/init.rc:root/init.rc \
     device/lge/vee4ss/rootdir/fstab.mt6575:root/fstab.mt6575 \
     device/lge/vee4ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \

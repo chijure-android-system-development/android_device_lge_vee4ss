@@ -247,6 +247,15 @@ on boot
 
     chmod 0755 /system/bin/sfprocstate.sh
 
+    # Diagnostic (2026-07-29): sanity-check that /system/bin/sh actually
+    # works during a real boot — two prior custom services invoked via
+    # "sh script.sh" produced zero output despite correct-looking rc
+    # syntax, and /system/bin/sh (mksh) was separately observed to
+    # segfault when invoked manually under TWRP. This is a synchronous
+    # exec (blocks briefly, that's fine), not a service, so it can't
+    # itself cause a boot hang.
+    exec /system/bin/sh -c "echo sh_ok > /data/sh_test.txt"
+
     # Clase de inicio para servicios del sistema
     class_start default
 
@@ -273,8 +282,13 @@ service persistlog /system/bin/logcat -v threadtime -f /data/boot_persist.log
 # segfaults unconditionally on this kernel/ABI (verified directly, not
 # specific to surfaceflinger), so this replaces that earlier attempt.
 # Log lands in /data/sf_procstate.log — pull it via TWRP the same way as
-# boot_persist.log. Remove once root-caused.
-service sfprocstate /system/bin/sh /system/bin/sfprocstate.sh
+# boot_persist.log. Invoked via busybox's ash rather than /system/bin/sh
+# (mksh): two earlier attempts through mksh (this one and the previous
+# strace-based one) produced zero output despite correct rc syntax, and
+# mksh separately segfaulted when invoked manually under TWRP — so this
+# swaps to a completely different, statically-linked shell implementation
+# as the cheapest way to rule mksh in or out. Remove once root-caused.
+service sfprocstate /system/xbin/busybox sh /system/bin/sfprocstate.sh
     class main
     user root
     group root graphics

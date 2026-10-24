@@ -28,6 +28,17 @@ Consequently, the following CM10 source changes must be kept together with
 | `frameworks/native` | `libui`, `libgui` and SurfaceFlinger | Restores the stock `GraphicBuffer`/MMU mapper ABI, fills the MTK layer fields and sends the private presentation flag required by the proprietary HWC. |
 | `frameworks/base` | BlueAngel Bluetooth, telephony | MT6620 Bluetooth stack (see below) and the GSMPhone/IccCard MTK fixes. |
 
+These platform changes are temporary and are kept as patch files in
+`patches/<project>/`, applied as uncommitted changes (nothing is committed
+to the CyanogenMod repositories). From the top of the tree:
+
+```bash
+device/lge/vee4ss/patches/apply-patches.sh    # skips series already present
+device/lge/vee4ss/patches/revert-patches.sh   # back to plain CM10
+```
+
+The goal is to keep moving them into the device tree as HALs/wrappers.
+
 Everything else that used to be patched in the platform now lives in this
 device tree (2026-10-24):
 

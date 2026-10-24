@@ -51,6 +51,7 @@ device tree (2026-10-24):
 | `media_profiles.xml` | — | High profile is m4v 320x240: H.263 only takes standard sizes and the encoder failed to start at 320x240. |
 | `overlay/packages/apps/LegacyCamera` | — | 68dp control bar (was 105dp) so the 4:3 preview fills the HVGA screen. |
 | `lights/lights.c` | — | Stock `lights.default.so` behaviour, plus LG's EmotionalLedService charging LED. |
+| `ril/` (`libvee4ss-ril`, `rild.libpath`) | `hardware/ril` rild patch | Gives `mtk-ril.so` MediaTek's six-entry `RIL_Env` from MTK's libril (proxy timed callback, AT channel and proxy id) instead of stubs, and waits for `/dev/radio/pttycmd1`. Fixes the `requestRadioPower` crash. |
 
 The graphics ABI additions are enabled with `VEE4SS_MTK_HWC_ABI`. Its build
 flag is limited to `TARGET_DEVICE=vee4ss` in the Android.mk files for

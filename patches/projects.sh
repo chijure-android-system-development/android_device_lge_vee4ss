@@ -5,7 +5,6 @@ PROJECTS="
 frameworks_base:frameworks/base
 frameworks_native:frameworks/native
 hardware_libhardware:hardware/libhardware
-hardware_ril:hardware/ril
 packages_apps_Phone:packages/apps/Phone
 packages_apps_Bluetooth:packages/apps/Bluetooth
 "

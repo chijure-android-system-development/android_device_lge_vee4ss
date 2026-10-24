@@ -258,16 +258,6 @@ on boot
 service bootlogoupdater /system/bin/boot_logo_updater
     oneshot
 
-# Persists the full logcat stream to /data so it survives even if USB/adb
-# drops mid-boot — pull it via TWRP afterward. A real init "service" is
-# started via fork+exec without init ever calling waitpid() on it inline,
-# so unlike an init.d/sysinit script it CANNOT block boot no matter what
-# it does with its own stdio or child processes.
-service persistlog /system/bin/logcat -v threadtime -f /data/boot_persist.log
-    class main
-    user root
-    group root log
-
 service ccci_rpcd /system/bin/ccci_rpcd
     class core
     user root

@@ -14,8 +14,13 @@ PRODUCT_BRAND        := lge
 PRODUCT_MODEL        := LG-E440g
 PRODUCT_MANUFACTURER := LGE
 
-# ---- Dalvik heap para dispositivo mdpi ~486 MB RAM (misma clase que vee5ss) ----
-$(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
+# ---- Dalvik heap para dispositivo mdpi ~486 MB RAM ----
+# Mismos valores que el mdpi-dalvik.mk del LG E610 oficial de CyanogenMod
+# (320x480 mdpi); el perfil hdpi-512 (48m/128m) es para pantallas más grandes.
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapstartsize=5m \
+    dalvik.vm.heapgrowthlimit=32m \
+    dalvik.vm.heapsize=96m
 
 # ---- AAPT ----
 PRODUCT_AAPT_CONFIG      := normal mdpi
@@ -89,12 +94,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.config.low_ram=true \
     config.disable_atlas=true \
     persist.service.adb.enable=1 \
-    persist.sys.usb.config=adb \
     ro.zram.default=25
 
+# USB defaults to MTP; post_process_props appends ",adb" on userdebug builds.
+# Kept out of build.prop, which loads after default.prop and would override it.
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.adb.secure=0 \
-    service.adb.root=1
+    service.adb.root=1 \
+    persist.sys.usb.config=mtp
 
 PRODUCT_TAGS += dalvik.gc.type-precise
 

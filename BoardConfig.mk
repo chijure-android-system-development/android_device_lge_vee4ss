@@ -82,6 +82,7 @@ TW_HAS_MTP := true
 TW_MTP_DEVICE := /dev/mtp_usb
 
 TW_NO_EXFAT := true
+TW_BUILD_AUTHOR := chijure
 TW_DEVICE_VERSION := 0.1
 TW_INCLUDE_CRYPTO := false
 TW_EXCLUDE_SUPERSU := true

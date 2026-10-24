@@ -1,4 +1,4 @@
-# TWRP device tree - LG Optimus L4 II
+# LG Optimus L4 II (vee4ss) - TWRP and CyanogenMod 10
 
 **Device**: LG-E440g
 **Codename**: vee4ss
@@ -10,6 +10,157 @@
 **Status: confirmed working on real hardware (2026-07-23).** Boots clean, touch
 responsive, internal/external storage mounted, MTP working, ADB reliable across
 repeated reboot cycles.
+
+## CyanogenMod 10 port status (real hardware, 2026-07-29)
+
+CM10 boots to Android and the display, boot animation and ADB have been
+confirmed on an LG-E440g. The display fix is **not contained entirely in this
+device tree**: LG's proprietary MT6575 graphics blobs use MediaTek extensions
+to the Jelly Bean HWC/GraphicBuffer ABI which are absent from AOSP/CM10.
+Consequently, the following CM10 source changes must be kept together with
+`device/lge/vee4ss` when reproducing the build.
+
+### Changes outside the device tree
+
+| CM10 project | Modified area | Reason |
+|--------------|---------------|--------|
+| `hardware/libhardware` | `include/hardware/hwcomposer.h` | Adds the private MT6575 fields to `hwc_layer_t` (132-byte layer) and `hwc_layer_list_t` (16-byte header). |
+| `frameworks/native` | `libui`, `libgui` and SurfaceFlinger | Restores the stock `GraphicBuffer`/MMU mapper ABI, fills the MTK layer fields and sends the private presentation flag required by the proprietary HWC. |
+| `frameworks/base` | BlueAngel Bluetooth, telephony | MT6620 Bluetooth stack (see below) and the GSMPhone/IccCard MTK fixes. |
+
+Everything else that used to be patched in the platform now lives in this
+device tree (2026-10-24):
+
+| Device tree | Replaces | What it does |
+|-------------|----------|--------------|
+| `audio/` (`audio.primary.mt6575`) | `hardware/libhardware` id-check bypass | The stock `libaudio.primary.default.so` reports module id `libaudio`, which `hw_get_module_by_class()` rejects; the wrapper carries the right id and opens the device through the blob. |
+| `libmtk_symbols/` + `LD_PRELOAD` in `init.mt6575.rc` | `system/core` liblog patch | Provides `__xlog_buf_printf` for the vendor blobs; the 4.1 linker searches preloads first. |
+| `include/cutils/xlog.h` | `system/core` header | XLOG macros for the BlueAngel sources in `frameworks/base`. |
+| `camera/camera_wrapper.c` | `frameworks/av` CameraSource NULL check | Adds `video-frame-format=yuv420sp`, which the stock HAL never sets. |
+| `media_profiles.xml` | — | High profile is m4v 320x240: H.263 only takes standard sizes and the encoder failed to start at 320x240. |
+| `overlay/packages/apps/LegacyCamera` | — | 68dp control bar (was 105dp) so the 4:3 preview fills the HVGA screen. |
+| `lights/lights.c` | — | Stock `lights.default.so` behaviour, plus LG's EmotionalLedService charging LED. |
+
+The graphics ABI additions are enabled with `VEE4SS_MTK_HWC_ABI`. Its build
+flag is limited to `TARGET_DEVICE=vee4ss` in the Android.mk files for
+SurfaceFlinger, `libui` and `libgui`, so other CM10 targets retain the standard
+ABI.
+
+The decisive black-screen fix is in
+`frameworks/native/services/surfaceflinger/DisplayHardware/HWComposer.cpp`:
+before calling the vendor HWC `set()`, SurfaceFlinger sets private list bit
+`0x2` (`LAYERS_SWAP_REQUIRED`). Without that bit Android reaches
+`sys.boot_completed=1`, but the MTK HWC never posts the composed framebuffer.
+The work list is also allocated with `calloc()` because the vendor blob reads
+the added private fields.
+
+`GraphicBuffer` includes the stock MT6575 `mMva`/`mSize` members and the
+`mmumapper` map/unmap interface. SurfaceFlinger passes the `GraphicBuffer*`,
+alpha and 3x3 transform expected by the blob. RGB UI buffers are not sent to
+the MMU mapper because the stock mapper rejects those formats.
+
+### Device-tree changes needed by CM10
+
+- `/dev/mtkfb_vsync` is owned by `system:graphics` with mode `0660`, allowing
+  SurfaceFlinger/HWC to receive VSYNC events.
+- USB defaults to `mtp,adb`: `persist.sys.usb.config=mtp` goes to
+  `default.prop` (userdebug appends `,adb`), not to `build.prop`, which loads
+  later and would override it.
+- The physical screen is declared as HVGA `320x480`, mdpi/160 dpi.
+- `TARGET_SCREEN_WIDTH` and `TARGET_SCREEN_HEIGHT` are set at the beginning of
+  `cm.mk`, before inheriting CM's common product configuration. This selects
+  `vendor/cm/prebuilt/common/bootanimation/320.zip`; setting the dimensions
+  only in `BoardConfig.mk` is too late and causes the oversized 480px fallback.
+
+### CM10 build
+
+Use the project Docker builder on the native Docker engine (Docker Desktop's
+shared folders are slow and can serve stale files); the source tree is
+mounted at `/home/builder/cm10` inside the container:
+
+```bash
+docker --context default exec cm10-builder bash -lc '
+cd /home/builder/cm10 && DEVICE=vee4ss ./timed_build.sh'
+```
+
+After changing a property in `device.mk`, delete
+`out/target/product/vee4ss/system/build.prop` and `root/default.prop` first:
+they are not regenerated otherwise. The OTA zip only updates `/system`; flash
+`boot.img` separately.
+
+Before distributing a build, verify that the generated system contains the
+320px animation:
+
+```bash
+unzip -p out/target/product/vee4ss/system/media/bootanimation.zip desc.txt
+# Expected first line: 320 320 24
+```
+
+Do not replace the complete CM10 `libui`/`libgui`/SurfaceFlinger stack with
+stock LG binaries. That experiment was incompatible with CM10's internal
+Binder and object layouts; the working configuration uses the CM10 components
+compiled with the compatibility changes described above.
+
+### Bluetooth MT6620 / BlueAngel (working, 2026-07-29)
+
+Bluetooth uses LG/MediaTek's proprietary BlueAngel stack, not CM10's default
+BlueZ/rfkill path. The unmodified CM10 backend aborts while enabling because
+this kernel has no Bluetooth entry at `/sys/class/rfkill/rfkill0`; MT6620 is
+controlled through WMT/STP, `/dev/stpbt` and `/system/bin/mtkbt` instead.
+
+The working port adds the MediaTek Bluetooth integration to
+`frameworks/base`: the BlueAngel versions of `BluetoothService`,
+`BluetoothEventLoop`, A2DP and socket JNI, the profile manager/socket Binder
+services, the additional Java/AIDL APIs in `framework2.jar`, and registration
+from `SystemServer`. `libandroid_runtime` is compiled with `__BTMTK__` and links
+the stock `libmtkbtextadpa2dp` and `libextjsr82` blobs. `servicemanager` also
+allows the Bluetooth UID to register the `mtk.bt.profile.*.ashm` services.
+
+The companion changes in `packages/apps/Bluetooth` bound or terminate accept
+threads cleanly during shutdown. `packages/apps/Phone` checks that the
+BlueAngel SCO server socket exists before closing it; without that check,
+turning Bluetooth off reaches `STATE_OFF` but crashes and restarts
+`com.android.phone`.
+
+Confirmed on the E440g:
+
+- `STATE_OFF (10) -> STATE_ON (12) -> STATE_OFF (10)`.
+- Local controller address read correctly as `30:76:6F:AB:C1:17`.
+- Classic discovery starts, reports real devices and their SDP UUIDs.
+- `mtkbt`, `system_server`, `com.android.bluetooth` and `com.android.phone`
+  remain alive across a complete on/off cycle.
+- Binder services `bluetooth_profile_manager` and `bluetooth_socket`, plus the
+  SPP/OPP/FTP/JSR82 shared-memory services, are registered.
+
+Files that must be rebuilt and installed together after changing this port:
+
+```text
+/system/lib/libandroid_runtime.so
+/system/framework/framework.jar
+/system/framework/framework2.jar
+/system/framework/services.jar
+/system/app/Bluetooth.apk
+/system/app/Phone.apk
+/system/bin/servicemanager
+```
+
+Partial build command used during validation:
+
+```bash
+docker exec cm10-builder bash -lc '
+cd /home/builder/cm10 &&
+source build/envsetup.sh >/dev/null &&
+lunch cm_vee4ss-eng >/dev/null &&
+make -j4 libandroid_runtime framework framework2 services \
+    Bluetooth Phone servicemanager
+'
+```
+
+The initial local-name, scan-mode and local-UUID requests contain compatibility
+guards for this specific `mtkbt` binary. The daemon does not implement its
+advertised local-UUID request; later scan-mode changes and discovery are sent
+normally. Pairing, A2DP audio and file transfer still need separate end-to-end
+tests even though their services initialize without fatal errors.
 
 Based on the already hardware-verified [`device/lge/vee5ss`](../vee5ss/) tree
 (LG-E450g, same MT6575 SoC, same LG family). Boot image layout and MTK partition

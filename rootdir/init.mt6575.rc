@@ -60,6 +60,8 @@ on post-fs-data
 
 on boot
     write /dev/kmsg "CMBOOT: boot - loading modules\n"
+    chown system graphics /dev/mtkfb_vsync
+    chmod 0660 /dev/mtkfb_vsync
     # Kernel modules — cargar antes de que arranquen los servicios
     insmod /system/lib/modules/pvrsrvkm.ko
     chmod 0666 /dev/pvrsrvkm

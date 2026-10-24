@@ -112,9 +112,6 @@ PRODUCT_PACKAGES += \
     libbtcust \
     libbtcusttable \
     libbtpcm \
-    libcamalgo \
-    libcameracustom \
-    libcameraprofile \
     libcustom_nvram \
     libextjsr82 \
     libmtk_devinfo \

@@ -1,3 +1,8 @@
+# Must be set before inheriting CM's common product configuration so it selects
+# the 320px boot animation for this 320x480 HVGA panel.
+TARGET_SCREEN_WIDTH := 320
+TARGET_SCREEN_HEIGHT := 480
+
 $(call inherit-product, device/lge/vee4ss/device.mk)
 $(call inherit-product-if-exists, vendor/lge/vee4ss/vee4ss-vendor-blobs.mk)
 $(call inherit-product, vendor/cm/config/common_full_phone.mk)

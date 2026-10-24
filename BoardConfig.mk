@@ -10,6 +10,12 @@ TARGET_CPU_ABI2 := armeabi
 TARGET_CPU_VARIANT := cortex-a9
 TARGET_ARCH_LOWMEM := true
 
+# Physical panel: HVGA portrait. CM uses the smaller dimension to select the
+# matching boot animation, so this picks vendor/cm's 320.zip instead of the
+# 480.zip fallback from common_full_phone.mk.
+TARGET_SCREEN_WIDTH := 320
+TARGET_SCREEN_HEIGHT := 480
+
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
 

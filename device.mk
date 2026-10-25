@@ -32,7 +32,13 @@ PRODUCT_COPY_FILES += \
     device/lge/vee4ss/rootdir/init.mt6575.rc:root/init.mt6575.rc \
     device/lge/vee4ss/rootdir/init.mt6575.usb.rc:root/init.mt6575.usb.rc
 
-# ---- Media: software codecs until the L4 II gets the MTK OMX blobs ----
+# ---- Media: MTK hardware codecs (common media_codecs.xml), 640x480 ----
+# Each device picks its media_codecs.xml: a product's PRODUCT_COPY_FILES
+# do not override an inherited one with the same destination. The MTK
+# codec blobs come from vendor/lge/vee4ss.
 PRODUCT_COPY_FILES += \
-    device/lge/vee4ss/media_profiles.xml:system/etc/media_profiles.xml \
-    device/lge/vee4ss/media_codecs.xml:system/etc/media_codecs.xml
+    device/lge/mt6575-common/rootdir/system/etc/media_codecs.xml:system/etc/media_codecs.xml \
+    device/lge/vee4ss/media_profiles.xml:system/etc/media_profiles.xml
+
+PRODUCT_PACKAGES += \
+    libstagefrighthw

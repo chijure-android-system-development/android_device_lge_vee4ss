@@ -6,7 +6,8 @@ PRODUCT_MANUFACTURER := LGE
 
 PRODUCT_COPY_FILES += \
     device/lge/vee4ss/ramdisk/init.recovery.mt6575.rc:root/init.recovery.mt6575.rc \
-    device/lge/vee4ss/ramdisk/sbin/postrecoveryboot.sh:root/sbin/postrecoveryboot.sh
+    device/lge/vee4ss/ramdisk/sbin/postrecoveryboot.sh:root/sbin/postrecoveryboot.sh \
+    device/lge/vee4ss/ramdisk/sbin/setserial.sh:root/sbin/setserial.sh
 
 PRODUCT_PACKAGES += \
     adbd
